@@ -1,0 +1,245 @@
+<!doctype html><html lang="zh-Hant"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>派特皇家學院｜預約管理</title><style>
+:root{font-family:-apple-system,BlinkMacSystemFont,'Noto Sans TC',sans-serif;color:#24344a;background:#f3f6fb}*{box-sizing:border-box}body{margin:0}main{max-width:920px;margin:32px auto;padding:16px}.card{background:#fff;border-radius:20px;padding:24px;margin:16px 0;box-shadow:0 8px 30px #1a355010}h1{font-size:27px}h2{font-size:20px}label{display:block;margin:12px 0 5px;font-weight:600}input,select,button{font:inherit}input,select{width:100%;padding:12px;border:1px solid #ccd5e2;border-radius:10px;background:white}button{background:#315e9a;color:white;border:0;border-radius:10px;padding:12px 18px;cursor:pointer}button:disabled{opacity:.55}.secondary{background:#e8edf5;color:#315071}.row{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:12px}.hidden{display:none!important}.muted{color:#6e7e94}.error{color:#aa3131;white-space:pre-wrap}.ok{color:#16724e}.pill{display:inline-block;background:#e9effa;border-radius:20px;padding:4px 10px;margin:3px}article{border-top:1px solid #e5eaf1;padding:12px 0}nav button{margin:4px}.actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}.danger{background:#a33746}.editbox{background:#f4f7fc;border-radius:12px;padding:12px;margin-top:12px}.editbox .row{margin-top:8px}small{display:block;margin:8px 0}input[type=checkbox]{width:auto} .room-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin:12px 0}.room-tile{border:1px solid #dbe4f0;border-radius:12px;padding:10px;background:#f8faff;font-size:14px}.room-tile strong{display:block;font-size:18px;margin-top:4px}.room-tile.selected{border:2px solid #315e9a}.room-tile.full{background:#fff1f2;color:#a33746}.top{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap}
+
+.calendar-head{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-bottom:12px}.calendar-head h3{margin:0;text-align:center}.calendar-head button{padding:9px 13px}.calendar-grid{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:5px}.calendar-weekday{text-align:center;font-size:13px;color:#6e7e94;padding:8px 0}.calendar-day{min-height:74px;border:1px solid #dce4f0;border-radius:10px;background:#fff;color:#24344a;padding:7px 3px;text-align:center;display:flex;flex-direction:column;gap:4px;align-items:center;justify-content:flex-start}.calendar-day span{font-weight:700}.calendar-day small{margin:0;font-size:11px;color:#55708c}.calendar-day.selected{border:2px solid #315e9a;background:#edf4ff}.calendar-day.today{box-shadow:inset 0 0 0 1px #8db5e5}.calendar-day:disabled{opacity:1}.calendar-empty{min-height:74px}.calendar-detail{margin-top:20px;border-top:1px solid #e5eaf1;padding-top:16px}.calendar-counts{margin:10px 0}.calendar-loading{color:#6e7e94}@media(max-width:550px){.calendar-day{min-height:66px;padding:6px 1px}.calendar-day small{font-size:10px}.calendar-grid{gap:3px}.calendar-head h3{font-size:17px}}
+ .dog-choices{border:1px solid #ccd5e2;border-radius:12px;padding:10px;max-height:250px;overflow:auto}.dog-choices label{display:flex;gap:12px;align-items:center;padding:9px;border-bottom:1px solid #eef1f6;font-weight:400}.dog-choices input{width:22px;height:22px;flex:none}.dog-choices label:last-child{border:0}</style></head><body><main><div class="top"><h1>🐾 派特皇家學院</h1><button id="logout" class="secondary hidden">登出</button></div><p class="muted">員工預約管理系統 · V2.3（總統套房雙犬測試版）</p><section id="loginPanel" class="card"><h2>管理員／員工登入</h2><form id="loginForm"><label>電子郵件</label><input id="email" type="email" autocomplete="username" required><label>密碼</label><input id="password" type="password" autocomplete="current-password" required><p><button>登入</button></p></form><p id="loginMsg" class="error" role="status" aria-live="polite"></p><p id="debugMsg" class="muted" role="status" aria-live="polite">登入程式準備中…</p></section><div id="app" class="hidden"><section class="card"><div class="top"><div><strong id="who"></strong><div class="muted" id="today"></div></div><button id="refresh" class="secondary">重新整理</button></div><nav><button data-tab="dashboard">今日總覽</button><button data-tab="new">新增預約</button><button data-tab="search">查詢預約</button><button data-tab="calendar">月曆總覽</button></nav><p id="message"></p></section><section id="dashboard" class="card"><h2>今日預約總覽</h2><div id="stats"></div><div id="todayList"></div></section><section id="calendar" class="card hidden"><h2>月曆式預約總覽</h2><div class="calendar-head"><button type="button" class="secondary" id="calPrev">‹ 上個月</button><h3 id="calTitle"></h3><button type="button" class="secondary" id="calNext">下個月 ›</button></div><div id="calStatus" class="calendar-loading" role="status"></div><div id="calGrid" class="calendar-grid"></div><div class="calendar-detail"><h3 id="calSelectedTitle">每日預約明細</h3><div id="calCounts" class="calendar-counts"></div><div id="calList"></div></div></section><section id="new" class="card hidden"><h2>新增預約</h2><p class="muted">先建立家長與狗狗，再建立安親或住宿預約。每日學院與游泳會一起儲存。</p><form id="ownerForm"><h3>① 建立家長</h3><div class="row"><div><label>家長姓名</label><input id="ownerName" required></div><div><label>電話</label><input id="ownerPhone" inputmode="tel"></div></div><p><button>新增家長</button></p></form><form id="dogForm"><h3>② 建立狗狗</h3><label>所屬家長</label><select id="dogOwner" required></select><div class="row"><div><label>狗狗姓名</label><input id="dogName" required></div><div><label>品種</label><input id="dogBreed"></div><div><label>性別</label><select id="dogSex"><option value="">未填</option><option>公</option><option>母</option></select></div></div><p><button>新增狗狗</button></p></form><form id="bookingForm"><h3>③ 建立預約</h3><label>狗狗</label><select id="bookingDog" required></select><div id="multiDogWrap" class="hidden"><label>共同住宿狗狗（可勾選多隻）</label><div id="multiDogChoices" class="dog-choices"></div><small>僅總統套房可勾選兩隻狗共同住宿；其他房型限一隻。每隻狗會建立獨立的每日課程紀錄。</small></div><div class="row"><div><label>類型</label><select id="bookingType"><option value="daycare">安親</option><option value="boarding">住宿</option></select></div><div><label>開始日期</label><input type="date" id="startDate" required></div><div><label>結束日期（住宿為退宿日）</label><input type="date" id="endDate" required></div><div id="roomWrap" class="hidden"><label>房型</label><select id="roomType"><option value="精緻">精緻</option><option value="商務">商務</option><option value="豪華">豪華</option><option value="總統">總統</option></select><div id="roomAvailability" class="room-grid" aria-live="polite">選擇住宿日期後顯示剩餘房數</div><button type="button" class="secondary" id="checkRooms">查詢房況</button></div><div><label>學院</label><select id="academy"><option value="">不指定</option><option>騎士</option><option>精靈</option><option>貴族</option><option>舊票卡</option></select></div><div><label>舊票卡加購課程（手動輸入）</label><input id="oldTicketCourse" placeholder="例如：嗅聞課、游泳課；可留空"></div><div><label>選修課</label><input id="elective" placeholder="可留空"></div><div><label>游泳後服務</label><select id="afterSwim"><option value="">無</option><option>吹毛</option><option>美容</option></select></div><div><label>到店方式</label><select id="arrival"><option value="">未指定</option><option>家長自送</option><option>娃娃車</option></select></div><div><label>離店方式</label><select id="departure"><option value="">未指定</option><option>家長自接</option><option>娃娃車</option></select></div></div><label><input id="swimming" type="checkbox"> 加購游泳</label><small>住宿會為每個住宿日建立同樣的學院活動；退宿日不計入。游泳需先在資料庫設定該日名額。</small><p><button id="saveBooking">儲存預約</button></p></form></section><section id="search" class="card hidden"><h2>查詢預約</h2><div class="row"><div><label>日期</label><input type="date" id="filterDate"></div><div><label>搜尋狗狗／家長／電話末三碼</label><input id="filterText" placeholder="輸入關鍵字"></div></div><p><button id="searchBtn">查詢</button></p><div id="searchList"></div></section></div><footer class="muted"><small>測試版：已提供課程與接送方式修改、取消預約；多人同住功能測試中，尚未提供自然語言輸入。請先用測試資料驗證流程。</small></footer></main><script>
+const SUPABASE_PROJECT_URL='https://mbignwdpjdqzsqlfshuc.supabase.co',KEY='sb_publishable_2QBPeUUWNzde1z1XRDGipQ_l9spERoV';let db=null;const $=id=>document.getElementById(id);const fmt=d=>{const y=d.getFullYear(),m=String(d.getMonth()+1).padStart(2,'0'),day=String(d.getDate()).padStart(2,'0');return `${y}-${m}-${day}`};const today=fmt(new Date());let owners=[],dogs=[],profile=null,rooms=[];function msg(s,err=false){$('message').className=err?'error':'ok';$('message').textContent=s}function safe(s){return String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}function opt(el,arr,label){el.innerHTML='<option value="">請選擇</option>'+arr.map(x=>`<option value="${safe(x.id)}">${safe(label(x))}</option>`).join('')}async function check(){
+ if(!db)return;
+ const {data:{user},error}=await db.auth.getUser();
+ if(error||!user){$('app').classList.add('hidden');$('loginPanel').classList.remove('hidden');$('logout').classList.add('hidden');return}
+ const p=await db.from('profiles').select('display_name,role,active').eq('id',user.id).single();
+ if(p.error)throw new Error('讀取員工權限失敗：'+p.error.message);
+ if(!p.data?.active||!['admin','staff'].includes(p.data.role))throw new Error('此帳號尚未啟用員工權限，請聯絡管理員');
+ profile=p.data;$('who').textContent=`${profile.display_name} · ${profile.role}`;$('today').textContent=`今天 ${today}`;
+ $('loginPanel').classList.add('hidden');$('app').classList.remove('hidden');$('logout').classList.remove('hidden');
+ try{await load();await dashboard()}catch(err){msg('資料載入失敗：'+err.message,true)}
+}
+function limit(p,ms,label){return Promise.race([p,new Promise((_,reject)=>setTimeout(()=>reject(new Error(label+'逾時，請確認網路連線後再試')),ms))])}
+const loginForm=$('loginForm'), loginBtn=loginForm.querySelector('button');
+$('debugMsg').textContent='網頁程式已啟動，正在載入 Supabase…';loginBtn.disabled=true;
+loginForm.addEventListener('submit',async e=>{
+ e.preventDefault();
+ const show=t=>{$('loginMsg').textContent=t;$('debugMsg').textContent=t};
+ if(!db){show('Supabase 元件未載入，請檢查網路後重新整理');return}
+ if(!loginForm.reportValidity())return;
+ loginBtn.disabled=true;show('已收到登入指令，正在驗證帳號…');
+ try{
+  const r=await limit(db.auth.signInWithPassword({email:$('email').value.trim(),password:$('password').value}),15000,'登入驗證');
+  if(r.error)throw r.error;
+  show('帳號驗證成功，正在讀取管理員權限…');
+  await limit(check(),15000,'讀取管理員資料');
+  if($('app').classList.contains('hidden'))throw new Error('登入已完成，但管理畫面未開啟');
+  $('password').value='';$('loginMsg').textContent='';
+ }catch(err){show('登入未完成：'+(err?.message||String(err)))}
+ finally{loginBtn.disabled=false}
+});
+$('logout').onclick=async()=>{if(db)await db.auth.signOut();await check()};document.querySelectorAll('[data-tab]').forEach(b=>b.onclick=()=>{['dashboard','new','search','calendar'].forEach(id=>$(id).classList.toggle('hidden',id!==b.dataset.tab));if(b.dataset.tab==='dashboard')dashboard();if(b.dataset.tab==='search')search();if(b.dataset.tab==='calendar')loadCalendar()});$('refresh').onclick=async()=>{await load();await dashboard();msg('已重新整理')};async function load(){let [a,b,c]=await Promise.all([db.from('owners').select('id,full_name,phone').order('created_at',{ascending:false}),db.from('dogs').select('id,name,breed,sex,owner_id').order('created_at',{ascending:false}),db.from('rooms').select('id,room_type,room_number,active')]);if(!c.error)rooms=c.data||[];if(a.error||b.error){msg(a.error?.message||b.error?.message,true);return}owners=a.data||[];dogs=b.data||[];opt($('dogOwner'),owners,o=>`${o.full_name} (${o.phone||'無電話'})`);opt($('bookingDog'),dogs,d=>`${d.name} · ${owners.find(o=>o.id===d.owner_id)?.full_name||''} · ${d.id.slice(0,8)}`);$('multiDogChoices').innerHTML=dogs.map(d=>`<label><input type="checkbox" class="multi-dog-check" value="${safe(d.id)}"><span>${safe(d.name)} · ${safe(owners.find(o=>o.id===d.owner_id)?.full_name||'')} · ${safe(d.id.slice(0,8))}</span></label>`).join('');syncDogPicker()}$('ownerForm').onsubmit=async e=>{e.preventDefault();const r=await db.from('owners').insert({full_name:$('ownerName').value.trim(),phone:$('ownerPhone').value.trim()||null});if(r.error)return msg(r.error.message,true);$('ownerForm').reset();await load();msg('家長已建立')};$('dogForm').onsubmit=async e=>{e.preventDefault();const r=await db.from('dogs').insert({owner_id:$('dogOwner').value,name:$('dogName').value.trim(),breed:$('dogBreed').value.trim()||null,sex:$('dogSex').value||null});if(r.error)return msg(r.error.message,true);$('dogForm').reset();await load();msg('狗狗已建立')};
+const ROOM_TYPES=['精緻','商務','豪華','總統'];
+function nightDates(start,end){return days(start,end,true)}
+async function roomAvailability(start,end,excludeId=null){
+ if(!start||!end||end<=start)throw new Error('請先選擇正確的入住及退宿日期');
+ const nights=nightDates(start,end);if(!nights.length||nights.length>119)throw new Error('住宿日期不可超過119晚');
+ const [rr,bb]=await Promise.all([
+  db.from('rooms').select('id,room_type,room_number,active').eq('active',true),
+  db.from('bookings').select('id,room_type,room_id,start_date,end_date,status').eq('booking_type','boarding').eq('status','confirmed').lt('start_date',end).gt('end_date',start)
+ ]);
+ if(rr.error||bb.error)throw new Error(rr.error?.message||bb.error?.message);
+ const activeRooms=rr.data||[], bookings=(bb.data||[]).filter(b=>b.id!==excludeId);
+ const result={};
+ for(const type of ROOM_TYPES){
+  const typeRooms=activeRooms.filter(r=>r.room_type===type);
+  const relevant=bookings.filter(b=>b.room_type===type);
+  const peak=Math.max(0,...nights.map(day=>relevant.filter(b=>b.start_date<=day&&day<b.end_date).length));
+  const available=typeRooms.filter(r=>!bookings.some(b=>b.room_id===r.id&&b.start_date<end&&b.end_date>start));
+  result[type]={total:typeRooms.length,remaining:Math.max(0,typeRooms.length-peak),rooms:available};
+ }
+ return result;
+}
+let roomRequest=0;
+async function updateRoomChoices(){
+ if($('bookingType').value!=='boarding')return;
+ const request=++roomRequest, label=$('roomAvailability');
+ label.textContent='正在查詢房況…';$('saveBooking').disabled=true;
+ try{
+  const data=await roomAvailability($('startDate').value,$('endDate').value);
+  if(request!==roomRequest)return;
+  const type=$('roomType').value,item=data[type];
+  label.innerHTML=ROOM_TYPES.map(t=>`<div class="room-tile ${t===type?'selected':''} ${data[t].remaining===0?'full':''}"><span>${t}套房</span><strong>${data[t].remaining===0?'已額滿':'剩 '+data[t].remaining+' 間'}</strong><span>共 ${data[t].total} 間</span></div>`).join('');
+  $('saveBooking').disabled=item.remaining<=0;
+  if(!item.remaining)msg('此房型已額滿，請選擇其他房型或日期',true);
+ }catch(e){if(request===roomRequest){label.textContent='房況查詢失敗：'+e.message;$('saveBooking').disabled=true}}
+}
+$('checkRooms').onclick=updateRoomChoices;
+$('roomType').onchange=()=>{enforceDogLimit();updateRoomChoices()};
+$('endDate').addEventListener('change',updateRoomChoices);
+function enforceDogLimit(){
+ const checks=[...document.querySelectorAll('.multi-dog-check')];
+ const isPresidential=$('roomType').value==='總統';
+ const checked=checks.filter(x=>x.checked);
+ if(!isPresidential&&checked.length>1){checked.slice(1).forEach(x=>x.checked=false);msg('只有總統套房可以兩隻狗共同住宿；其他房型限一隻。',true)}
+ if(isPresidential&&checked.length>2){checked.slice(2).forEach(x=>x.checked=false);msg('總統套房最多兩隻狗共同住宿。',true)}
+}
+$('multiDogChoices').addEventListener('change',e=>{if(e.target.matches('.multi-dog-check'))enforceDogLimit()});
+function syncDogPicker(){const board=$('bookingType').value==='boarding';$('multiDogWrap').classList.toggle('hidden',!board);$('bookingDog').classList.toggle('hidden',board);$('bookingDog').required=!board;const checks=[...document.querySelectorAll('.multi-dog-check')];const max=$('roomType').value==='總統'?2:1;const checked=checks.filter(c=>c.checked);if(checked.length>max)checked.slice(max).forEach(c=>c.checked=false);checks.forEach(c=>{c.disabled=!c.checked&&checks.filter(x=>x.checked).length>=max});const label=$('multiDogWrap').querySelector('small');if(label)label.textContent=$('roomType').value==='總統'?'總統套房最多可勾選兩隻狗，共用一間房。':'此房型限一隻狗；切換至總統套房才可選兩隻。';}document.getElementById('multiDogChoices').addEventListener('change',syncDogPicker);
+$('bookingType').onchange=()=>{const board=$('bookingType').value==='boarding';syncDogPicker();$('roomWrap').classList.toggle('hidden',!board);if(!board)$('endDate').value=$('startDate').value;else if($('endDate').value<=$('startDate').value){const d=new Date($('startDate').value+'T12:00:00');d.setDate(d.getDate()+1);$('endDate').value=fmt(d)}if(board)updateRoomChoices();else $('saveBooking').disabled=false};
+$('startDate').onchange=()=>{if($('bookingType').value==='daycare')$('endDate').value=$('startDate').value;else updateRoomChoices()};
+$('startDate').value=today;$('endDate').value=today;$('filterDate').value=today;
+function days(start,end,board){const a=[],d=new Date(start+'T12:00:00'),last=new Date(end+'T12:00:00');for(let n=0;n<120&&(board?d<last:d<=last);n++,d.setDate(d.getDate()+1))a.push(fmt(d));return a}
+$('bookingForm').onsubmit=async e=>{
+ e.preventDefault();const type=$('bookingType').value,start=$('startDate').value,end=$('endDate').value,board=type==='boarding';
+ const selected=board?[...document.querySelectorAll('.multi-dog-check:checked')].map(x=>x.value):[$('bookingDog').value].filter(Boolean);
+ if(!selected.length)return msg('請至少選擇一隻狗狗',true);
+ if(board&&selected.length>($('roomType').value==='總統'?2:1))return msg('僅總統套房可兩隻同住，其他房型只能選一隻',true);
+ if((board&&end<=start)||(!board&&end!==start))return msg('請檢查日期：住宿退宿日需晚於入住日，安親日期需相同',true);
+ const ds=days(start,end,board);if(!ds.length||ds.length>119)return msg('日期範圍不正確或過長',true);
+ const old_ticket_course=$('oldTicketCourse').value.trim()||null,academy=$('academy').value||null,swimming=$('swimming').checked,elective=$('elective').value.trim()||null,after_swim_service=$('afterSwim').value||null;
+ if(after_swim_service&&!swimming)return msg('請先勾選游泳，再選擇游泳後服務',true);
+ if(board){try{const availability=await roomAvailability(start,end);if(availability[$('roomType').value].remaining<=0)return msg('此住宿期間房型已滿，請改選其他房型或日期',true)}catch(err){return msg('無法確認房況：'+err.message,true)}}
+ // Preflight conflicts so an existing dog/date reservation is never overwritten.
+ const existing=await db.from('dog_booking_days').select('dog_id,activity_date').in('dog_id',selected).in('activity_date',ds);
+ if(existing.error)return msg('無法檢查狗狗是否重複預約：'+existing.error.message,true);
+ if(existing.data?.length){const hit=existing.data[0];const name=dogs.find(d=>d.id===hit.dog_id)?.name||'狗狗';return msg(`${name} 在 ${hit.activity_date} 已有預約，請改日期或先確認原預約。`,true)}
+ const names=selected.map(id=>dogs.find(d=>d.id===id)?.name||'未知').join('、');
+ if(!confirm(`確認預約？\n狗狗：${names}\n${board?(selected.length>1?'共同住宿（共用一間房）':'住宿'):'安親'}：${start} 至 ${end}\n學院：${academy||'未指定'}\n游泳：${swimming?'有':'無'}\n活動天數：${ds.length}`))return;
+ const btn=$('saveBooking');btn.disabled=true;let id=null;
+ try{
+  // Parent booking counts as exactly one room; primary dog is the first selected dog.
+  const b=await db.from('bookings').insert({dog_id:selected[0],booking_type:type,start_date:start,end_date:end,room_type:board?$('roomType').value:null,room_id:null,arrival_method:$('arrival').value||null,departure_method:$('departure').value||null}).select('id').single();if(b.error)throw b.error;id=b.data.id;
+  // Link additional dogs first, then re-trigger booking-day synchronization.
+  const links=await db.from('booking_dogs').insert(selected.map(dog_id=>({booking_id:id,dog_id})));if(links.error)throw links.error;
+  if(selected.length>1){const sync=await db.from('bookings').update({departure_method:$('departure').value||null}).eq('id',id).select('id');if(sync.error)throw sync.error;if(!sync.data?.length)throw new Error('無法同步共同住宿日期，請確認資料庫權限')}
+  const activities=selected.flatMap(dog_id=>ds.map(activity_date=>({booking_id:id,dog_id,activity_date,academy,swimming,elective,after_swim_service,old_ticket_course})));
+  const a=await db.from('daily_activities').insert(activities);if(a.error)throw a.error;
+  msg(`預約建立成功！${names} 共 ${selected.length} 隻。`);$('bookingForm').reset();$('startDate').value=today;$('endDate').value=today;$('roomWrap').classList.add('hidden');$('roomAvailability').textContent='選擇住宿日期後顯示剩餘房數';syncDogPicker();await dashboard();
+ }catch(err){if(id){const cleanup=await db.from('bookings').delete().eq('id',id);msg(`儲存失敗：${err.message}。${cleanup.error?'部分資料可能保留，請聯絡管理員確認。':'已嘗試撤銷此次預約。'}`,true)}else msg('儲存失敗：'+err.message,true)}finally{btn.disabled=false}
+};
+async function records(date){const b=await db.from('bookings').select('id,dog_id,booking_type,start_date,end_date,room_type,room_id,status,arrival_method,departure_method').lte('start_date',date).gte('end_date',date).order('start_date');if(b.error)throw b.error;const ids=(b.data||[]).map(x=>x.id);if(!ids.length)return[];const a=await db.from('daily_activities').select('booking_id,activity_date,academy,swimming,elective,after_swim_service,old_ticket_course').in('booking_id',ids).eq('activity_date',date);if(a.error)throw a.error;return(b.data||[]).filter(x=>x.status==='confirmed'&&(x.booking_type==='daycare'||x.start_date<=date&&date<x.end_date)).map(x=>({...x,activity:(a.data||[]).find(y=>y.booking_id===x.id)}))}function render(list){if(!list.length)return'<p class="muted">沒有符合的預約</p>';return list.map(x=>{const dog=dogs.find(d=>d.id===x.dog_id),owner=owners.find(o=>o.id===dog?.owner_id),a=x.activity;return `<article><strong>${safe(dog?.name||'未知狗狗')}</strong> <span class="pill">${x.booking_type==='boarding'?'住宿':'安親'}</span> <span class="pill">${safe(a?.academy||'未指定學院')}</span><div>${safe(owner?.full_name||'')} · ${safe(owner?.phone||'無電話')} · ${safe(dog?.breed||'')}</div><div class="muted">${safe(x.start_date)} 至 ${safe(x.end_date)} ${x.room_type?'· '+safe(x.room_type)+'套房':''} </div><div>${a?.swimming?'游泳 · ':''}${safe(a?.elective||'')}${a?.old_ticket_course?' · 舊票卡加購：'+safe(a.old_ticket_course):''}${a?.after_swim_service?' · 課後'+safe(a.after_swim_service):''}</div><div class="actions"><button class="secondary" type="button" data-edit="${safe(x.id)}">修改課程／接送</button><button class="danger" type="button" data-cancel="${safe(x.id)}">取消預約</button></div><div class="editbox hidden" id="edit-${safe(x.id)}"></div></article>`}).join('')}async function dashboard(){try{const r=await records(today);$('stats').innerHTML=`<span class="pill">今日 ${r.length} 隻</span><span class="pill">安親 ${r.filter(x=>x.booking_type==='daycare').length}</span><span class="pill">住宿 ${r.filter(x=>x.booking_type==='boarding').length}</span><span class="pill">游泳 ${r.filter(x=>x.activity?.swimming).length}</span>`+['騎士','精靈','貴族','舊票卡'].map(n=>`<span class="pill">${n} ${r.filter(x=>x.activity?.academy===n).length}</span>`).join('');$('todayList').innerHTML=render(r);if(!$('calendar').classList.contains('hidden'))loadCalendar()}catch(e){msg(e.message,true)}}let calendarMonth=today.slice(0,7),calendarSelected=today,calendarRequest=0;
+function monthShift(value,delta){const [y,m]=value.split('-').map(Number);const d=new Date(y,m-1+delta,1);return fmt(d).slice(0,7)}
+function calendarSummary(rows){return `<span class="pill">共 ${rows.length} 隻</span><span class="pill">安親 ${rows.filter(x=>x.booking_type==='daycare').length}</span><span class="pill">住宿 ${rows.filter(x=>x.booking_type==='boarding').length}</span><span class="pill">游泳 ${rows.filter(x=>x.activity?.swimming).length}</span>`+['騎士','精靈','貴族','舊票卡'].map(n=>`<span class="pill">${n} ${rows.filter(x=>x.activity?.academy===n).length}</span>`).join('')}
+async function loadCalendar(){
+ const request=++calendarRequest,month=calendarMonth,[year,mon]=month.split('-').map(Number),first=month+'-01',next=monthShift(month,1)+'-01';
+ $('calTitle').textContent=`${year} 年 ${mon} 月`;$('calStatus').textContent='正在載入整個月份的預約…';$('calGrid').innerHTML='';$('calCounts').innerHTML='';$('calList').innerHTML='';
+ try{
+  const [br,ar]=await Promise.all([
+   db.from('bookings').select('id,dog_id,booking_type,start_date,end_date,room_type,room_id,status,arrival_method,departure_method').eq('status','confirmed').lt('start_date',next).gte('end_date',first).order('start_date'),
+   db.from('daily_activities').select('booking_id,activity_date,academy,swimming,elective,after_swim_service,old_ticket_course').gte('activity_date',first).lt('activity_date',next)
+  ]);
+  if(br.error||ar.error)throw br.error||ar.error;
+  if(request!==calendarRequest)return;
+  const bookings=br.data||[],activities=ar.data||[],activityMap=new Map(activities.map(a=>[a.booking_id+'|'+a.activity_date,a]));
+  const countDays=new Date(year,mon,0).getDate(),offset=new Date(year,mon-1,1).getDay(),byDay={};
+  for(let day=1;day<=countDays;day++){
+   const date=month+'-'+String(day).padStart(2,'0');
+   byDay[date]=bookings.filter(b=>b.start_date<=date&&(b.booking_type==='boarding'?date<b.end_date:date===b.start_date)).map(b=>({...b,activity:activityMap.get(b.id+'|'+date)}));
+  }
+  $('calGrid').innerHTML=['日','一','二','三','四','五','六'].map(n=>`<div class="calendar-weekday">${n}</div>`).join('')+Array.from({length:offset},()=>'<div class="calendar-empty"></div>').join('')+Array.from({length:countDays},(_,i)=>{const day=i+1,date=month+'-'+String(day).padStart(2,'0'),r=byDay[date];return `<button type="button" class="calendar-day ${date===today?'today':''} ${date===calendarSelected?'selected':''}" data-cal-date="${date}" aria-label="${date}，${r.length} 隻預約"><span>${day}</span><small>${r.length} 隻</small></button>`}).join('');
+  $('calStatus').textContent='點選日期即可查看預約明細。住宿退宿日不列入住房統計。';
+  function selectDay(date){calendarSelected=date;document.querySelectorAll('[data-cal-date]').forEach(b=>b.classList.toggle('selected',b.dataset.calDate===date));$('calSelectedTitle').textContent=`${date} 預約明細`;$('calCounts').innerHTML=calendarSummary(byDay[date]||[]);$('calList').innerHTML=render(byDay[date]||[])}
+  $('calGrid').onclick=e=>{const btn=e.target.closest('[data-cal-date]');if(btn)selectDay(btn.dataset.calDate)};
+  selectDay(calendarSelected.startsWith(month)?calendarSelected:first);
+ }catch(e){if(request===calendarRequest)$('calStatus').textContent='月曆載入失敗：'+e.message}
+}
+$('calPrev').onclick=()=>{calendarMonth=monthShift(calendarMonth,-1);calendarSelected=calendarMonth+'-01';loadCalendar()};
+$('calNext').onclick=()=>{calendarMonth=monthShift(calendarMonth,1);calendarSelected=calendarMonth+'-01';loadCalendar()};
+async function search(){try{const date=$('filterDate').value||today;const text=$('filterText').value.trim().toLowerCase();const r=await records(date);$('searchList').innerHTML=render(r.filter(x=>{const d=dogs.find(d=>d.id===x.dog_id),o=owners.find(o=>o.id===d?.owner_id);return !text||[d?.name,d?.breed,o?.full_name,o?.phone?.slice(-3)].some(v=>v?.toLowerCase().includes(text))}))}catch(e){msg(e.message,true)}}$('searchBtn').onclick=search;
+// Event delegation ensures buttons work after lists are re-rendered.
+let editingBusy=false;
+function editSelect(label, field, choices, selected){return `<label>${label}<select data-field="${field}">${choices.map(([v,t])=>`<option value="${safe(v)}" ${v===(selected||'')?'selected':''}>${safe(t)}</option>`).join('')}</select></label>`}
+async function openEdit(id){
+ const box=document.getElementById('edit-'+id);if(!box)return;
+ if(!box.classList.contains('hidden')){box.classList.add('hidden');return}
+ box.classList.remove('hidden');box.textContent='正在讀取預約資料…';
+ const [b,a]=await Promise.all([db.from('bookings').select('*').eq('id',id).single(),db.from('daily_activities').select('*').eq('booking_id',id).order('activity_date')]);
+ if(b.error||a.error){box.textContent='讀取失敗：'+(b.error?.message||a.error?.message);return}
+ const booking=b.data,acts=a.data||[];
+ if(booking.status!=='confirmed'){box.textContent='此預約已取消，不能修改。';return}
+ const first=acts[0]||{};
+ box.innerHTML=`<strong>修改預約</strong><p class="muted">課程設定會套用至本筆預約的所有活動日期。日期修改請使用下方獨立區塊。</p><div class="row">${editSelect('學院','academy',[['','不指定'],['騎士','騎士'],['精靈','精靈'],['貴族','貴族'],['舊票卡','舊票卡']],first.academy)}${editSelect('游泳','swimming',[['false','不游泳'],['true','加購游泳']],String(!!first.swimming))}${editSelect('游泳後服務','after_swim_service',[['','無'],['吹毛','吹毛'],['美容','美容']],first.after_swim_service)}${editSelect('到店方式','arrival_method',[['','未指定'],['家長自送','家長自送'],['娃娃車','娃娃車']],booking.arrival_method)}${editSelect('離店方式','departure_method',[['','未指定'],['家長自接','家長自接'],['娃娃車','娃娃車']],booking.departure_method)}</div><label>選修課<input data-field="elective" value="${safe(first.elective||'')}"></label><label>舊票卡加購課程（手動輸入）<input data-field="old_ticket_course" value="${safe(first.old_ticket_course||'')}" placeholder="可留空"></label><p><button type="button" data-save="${safe(id)}">儲存修改</button> <button type="button" class="secondary" data-close="${safe(id)}">關閉</button></p><p class="muted" data-editmsg></p>`;
+ appendDateEditor(box,booking);
+ if(booking.booking_type==='boarding')await appendRoomEditor(box,booking);
+}
+
+function appendDateEditor(box,booking){
+ const section=document.createElement('div');section.className='editbox';
+ section.innerHTML=`<strong>修改預約日期</strong><p class="muted">未變動日期的課程會保留；新日期會沿用學院與選修，但不自動安排游泳。住宿退宿日不計入課程。</p><div class="row"><label>${booking.booking_type==='boarding'?'入住日期':'安親日期'}<input type="date" data-date-start value="${safe(booking.start_date)}"></label>${booking.booking_type==='boarding'?`<label>退宿日期<input type="date" data-date-end value="${safe(booking.end_date)}"></label>`:''}</div><button type="button" data-date-save="${safe(booking.id)}">儲存日期修改</button><p class="muted" data-date-status></p>`;
+ box.appendChild(section);
+}
+async function saveDateEdit(id,box){
+ if(editingBusy)return;
+ const section=box.querySelector('[data-date-save]').closest('.editbox');
+ const button=section.querySelector('[data-date-save]'),status=section.querySelector('[data-date-status]');
+ const start=section.querySelector('[data-date-start]').value;
+ const end=section.querySelector('[data-date-end]')?.value||start;
+ if(!start||!end||end<start||(section.querySelector('[data-date-end]')&&end===start)){
+   status.textContent='請選擇正確的日期';status.className='error';return;
+ }
+ if(!confirm(`確定修改預約日期為 ${start} 至 ${end}？\n移除的日期將刪除對應課程，新日期不會自動安排游泳。`))return;
+ editingBusy=true;button.disabled=true;status.textContent='正在修改日期…';
+ try{
+  const result=await db.rpc('change_booking_dates',{p_booking_id:id,p_start_date:start,p_end_date:end});
+  if(result.error)throw result.error;
+  status.textContent='日期修改成功！';status.className='ok';
+  msg('日期修改成功！');await load();await dashboard();await search();
+  if(!$('calendar').classList.contains('hidden'))await loadCalendar();
+ }catch(e){status.textContent='修改失敗：'+e.message+'。原預約應維持不變，請重新查詢確認。';status.className='error'}
+ finally{editingBusy=false;button.disabled=false}
+}
+async function appendRoomEditor(box,booking){
+ const section=document.createElement('div');section.className='editbox';
+ section.innerHTML='<strong>修改住宿房型</strong><p class="muted">只修改房型，不分配房號；入住與退宿日期不變。</p><label>房型<select data-roomtype>'+ROOM_TYPES.map(t=>`<option value="${t}" ${booking.room_type===t?'selected':''}>${t}套房</option>`).join('')+'</select></label><div data-roomstatus class="muted"></div><button type="button" data-room-save="'+safe(booking.id)+'">儲存房型</button>';
+ box.appendChild(section);
+ const typeSelect=section.querySelector('[data-roomtype]'),status=section.querySelector('[data-roomstatus]'),button=section.querySelector('[data-room-save]');
+ async function refresh(){
+  status.textContent='正在查詢房況…';button.disabled=true;
+  try{const data=await roomAvailability(booking.start_date,booking.end_date,booking.id);const info=data[typeSelect.value];
+   status.textContent=`${typeSelect.value}：剩 ${info.remaining}/${info.total} 間（不計本筆預約）`;
+   button.disabled=info.remaining<=0;
+  }catch(e){status.textContent='查詢失敗：'+e.message}
+ }
+ typeSelect.onchange=refresh;await refresh();
+}
+async function saveRoomAssignment(id,box){
+ if(editingBusy)return;editingBusy=true;
+ const section=box.querySelector('[data-roomtype]').closest('.editbox'),button=section.querySelector('[data-room-save]');button.disabled=true;
+ const status=section.querySelector('[data-roomstatus]'),type=section.querySelector('[data-roomtype]').value;
+ try{
+  const current=await db.from('bookings').select('id,start_date,end_date,room_type,status').eq('id',id).single();if(current.error)throw current.error;
+  if(current.data.status!=='confirmed')throw new Error('預約已取消');
+  const available=await roomAvailability(current.data.start_date,current.data.end_date,id);
+  if(available[type].remaining<=0)throw new Error('此房型已滿');
+  const r=await db.from('bookings').update({room_type:type,room_id:null}).eq('id',id).eq('status','confirmed').select('id');if(r.error)throw r.error;
+  if(!r.data?.length)throw new Error('預約不存在或已取消');
+  msg('住宿房型修改成功！');await load();await dashboard();await search();
+ }catch(e){status.textContent='儲存失敗：'+e.message+'。請重新查詢房況。';status.className='error'}finally{editingBusy=false;button.disabled=false}
+}
+async function saveEdit(id,box){
+ if(editingBusy)return;editingBusy=true;const btn=box.querySelector('[data-save]');btn.disabled=true;
+ const val=f=>box.querySelector(`[data-field="${f}"]`).value;
+ const old_ticket_course=val('old_ticket_course').trim()||null;const academy=val('academy')||null,swimming=val('swimming')==='true',after_swim_service=val('after_swim_service')||null,elective=val('elective').trim()||null;
+ const status=box.querySelector('[data-editmsg]');
+ try{
+  if(after_swim_service&&!swimming)throw new Error('請先選擇游泳，才能設定游泳後服務');
+  // Update activity rows before booking transport. If swim capacity rejects the change, transport stays unchanged.
+  const a=await db.from('daily_activities').update({academy,swimming,elective,after_swim_service,old_ticket_course}).eq('booking_id',id).select('id');
+  if(a.error)throw a.error;
+  if(!a.data?.length)throw new Error('找不到課程資料，未能修改');
+  const b=await db.from('bookings').update({arrival_method:val('arrival_method')||null,departure_method:val('departure_method')||null}).eq('id',id).eq('status','confirmed').select('id');
+  if(b.error)throw b.error;
+  if(!b.data?.length)throw new Error('預約已取消或不存在');
+  msg('預約修改成功！');await load();await dashboard();await search();
+ }catch(e){status.textContent='修改未完成：'+e.message+'。若是住宿多日預約，請重新查詢確認每一天的內容。';status.className='error'}finally{editingBusy=false;btn.disabled=false}
+}
+async function cancelBooking(id){
+ if(editingBusy)return;
+ if(!confirm('確定要取消這筆預約嗎？\n取消後不會計入每日預約及房間名額。'))return;
+ editingBusy=true;
+ try{const r=await db.from('bookings').update({status:'cancelled'}).eq('id',id).eq('status','confirmed').select('id');if(r.error)throw r.error;if(!r.data?.length)throw new Error('預約不存在或已取消');msg('預約已取消');await dashboard();await search()}catch(e){msg('取消失敗：'+e.message,true)}finally{editingBusy=false}
+}
+document.addEventListener('click',async e=>{
+ const edit=e.target.closest('[data-edit]'),cancel=e.target.closest('[data-cancel]'),save=e.target.closest('[data-save]'),close=e.target.closest('[data-close]'),roomSave=e.target.closest('[data-room-save]'),dateSave=e.target.closest('[data-date-save]');
+ if(dateSave){await saveDateEdit(dateSave.dataset.dateSave,dateSave.closest('.editbox').parentElement)}else if(roomSave){await saveRoomAssignment(roomSave.dataset.roomSave,roomSave.closest('.editbox').parentElement)}else if(edit){await openEdit(edit.dataset.edit)}else if(cancel){await cancelBooking(cancel.dataset.cancel)}else if(save){await saveEdit(save.dataset.save,save.closest('.editbox'))}else if(close){document.getElementById('edit-'+close.dataset.close)?.classList.add('hidden')}
+});
+function loadSupabase(url){return new Promise((resolve,reject)=>{const script=document.createElement('script');script.src=url;script.onload=()=>window.supabase?.createClient?resolve():reject(new Error('程式庫未提供 Supabase 物件'));script.onerror=()=>reject(new Error('無法下載 '+url));document.body.appendChild(script)})}
+async function init(){const status=$('debugMsg');try{let loaded=false;for(const url of ['https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js','https://unpkg.com/@supabase/supabase-js@2/dist/umd/supabase.min.js']){try{status.textContent='正在連線 Supabase 元件…';await limit(loadSupabase(url),10000,'下載登入元件');loaded=true;break}catch(e){status.textContent='嘗試備用登入元件…'}}if(!loaded)throw new Error('登入元件下載失敗，請檢查 Safari 網路、內容阻擋器或換用行動網路');const cleanURL=SUPABASE_PROJECT_URL.trim().replace(/\/rest\/v1\/?$/,'').replace(/\/+$/,'');if(!/^https:\/\/[a-z0-9-]+\.supabase\.co$/.test(cleanURL))throw new Error('Supabase 專案網址格式不正確');db=window.supabase.createClient(cleanURL,KEY);loginBtn.disabled=false;status.textContent='登入程式已就緒，可以按下登入。';db.auth.onAuthStateChange(event=>{if(event==='SIGNED_OUT'){$('app').classList.add('hidden');$('loginPanel').classList.remove('hidden')}});try{await limit(check(),15000,'初始化')}catch(err){status.textContent='初始化提示：'+err.message+'。仍可嘗試登入。'}}catch(err){status.textContent='初始化失敗：'+err.message+'。請確認目前頁面顯示 V1.7。';loginBtn.disabled=true}}
+init();
+</script></body></html>
